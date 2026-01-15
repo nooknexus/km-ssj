@@ -1,58 +1,56 @@
-# KM Health Server
+# KM Health - Server
 
-Backend API for the Health Knowledge Management System, built with **Node.js**, **Express**, and **MySQL**.
+Backend API พัฒนาด้วย Node.js, Express และ MySQL
 
 ## Prerequisites
-- Node.js (v16 or higher)
+- Node.js (v16+)
 - MySQL Database
 
-## Installation
+## Setup
 
-```bash
-cd server
-npm install
-```
+1. ติดตั้ง dependencies:
+   ```bash
+   npm install
+   ```
 
-## Database Setup
-1. Create a MySQL database named `km_db`.
-2. Import the schema and migration files in order:
-    - `db_schema.sql` (Initial schema)
-    - `migrate_sso.sql` (SSO support)
-    - `migrate_add_approval.sql` (User approval system)
+2. ตั้งค่า Database:
+   - สร้าง Database ชื่อ `km_db` (หรือตามที่ตั้งใน .env)
+   - Import Schema:
+     ```bash
+     mysql -u root -p km_db < schema.sql
+     mysql -u root -p km_db < migrate_sso.sql
+     mysql -u root -p km_db < migrate_add_approval.sql
+     ```
 
-## Environment Variables
-Create a `.env` file in the `server` directory:
+3. สร้างไฟล์ `.env`:
+   ```env
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=root
+   DB_NAME=km_db
+   PORT=5001
+   JWT_SECRET=secret
+   
+   # SSO Config
+   HEALTH_CLIENT_ID=...
+   HEALTH_CLIENT_SECRET=...
+   HEALTH_REDIRECT_URI=http://localhost:5001/api/auth/healthid
+   FRONTEND_URL=http://localhost:5173
+   ```
 
-```env
-# Database Configuration
-DB_HOST=database.lamp.orb.local
-DB_USER=root
-DB_PASSWORD=root
-DB_NAME=km_db
+## Running
 
-# JWT Secret
-JWT_SECRET=your_jwt_secret_key
+- **Development**: `npm run dev` (Hot reload with nodemon)
+- **Production**: `node index.js` (หรือใช้ PM2)
 
-# Server Port
-PORT=5001
+## API Structure
 
-# Health ID OAuth (SSO)
-HEALTH_CLIENT_ID=<your_client_id>
-HEALTH_CLIENT_SECRET=<your_client_secret>
-HEALTH_REDIRECT_URI=http://<YOUR_LOCAL_IP>:5001/api/auth/healthid
+- `/api/auth`: Login, SSO Callback
+- `/api/users`: CRUD Users, Approve, Change Role
+- `/api/categories`: Manage Categories
+- `/api/items`: Manage Articles
 
-# Frontend URL (For Redirects)
-FRONTEND_URL=http://<YOUR_LOCAL_IP>:5173
-```
+## Security Note
 
-## Running the Server
-The server is configured to list on `0.0.0.0` (all network interfaces).
-
-```bash
-# Development mode (with nodemon)
-npm run dev
-
-# Production
-node index.js
-```
-API Access: `http://<YOUR_LOCAL_IP>:5001`
+- **CORS**: ในโหมด Development จะเปิดกว้าง ใน Production ควรกำหนด `CORS_ORIGIN` ใน `.env`
+- **Passwords**: ผู้ใช้ทั่วไปใช้ SSO (ไม่มี Password ในระบบเรา), Admin แบบดั้งเดิมใช้ bcrypt hash
