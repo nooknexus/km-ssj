@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0ea5e9;
+  --color-secondary: #6366f1;
+  --color-accent: #f43f5e;
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --font-sans: 'Prompt', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* Global styles for preventing horizontal scroll */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+body {
+  @apply bg-background text-slate-800 font-sans antialiased;
+}
+
+/* Ensure all containers respect width - only for main layout */
+.main-content {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Prevent images from overflowing */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
