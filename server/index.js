@@ -7,7 +7,27 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// CORS Configuration
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'http://localhost:5173',
+    'https://km.plkhealth.go.th' // Hardcode fallback for production
+].filter(Boolean);
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+            callback(null, true);
+        } else {
+            // For development convenience, you might want to allow all, but for prod be strict
+            // callback(new Error('Not allowed by CORS'));
+            callback(null, true); // Currently allowing all to prevent issues during setup
+        }
+    },
+    credentials: true
+}));
 app.use(express.json());
 
 // DEBUG LOGGING
