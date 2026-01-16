@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path'); // Moved up
+const fs = require('fs');     // Moved up
 
 // Load env vars
 const result = dotenv.config();
@@ -44,8 +46,6 @@ app.use(cors({
 app.use(express.json());
 
 // DEBUG LOGGING
-const fs = require('fs');
-const path = require('path');
 app.use((req, res, next) => {
     const log = `${new Date().toISOString()} ${req.method} ${req.originalUrl}\n`;
     try {
