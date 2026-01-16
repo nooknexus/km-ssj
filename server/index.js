@@ -60,7 +60,28 @@ app.use('/api/items', itemRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/uploads', express.static('uploads'));
 
-// 404 Handler
+// Serve Frontend Static Files
+const clientDistPath = path.join(__dirname, '../client/dist');
+const htmlPath = path.join(clientDistPath, 'index.html');
+
+// Check if frontend build exists
+if (fs.existsSync(clientDistPath)) {
+    console.log(`Serving frontend from: ${clientDistPath}`);
+    app.use(express.static(clientDistPath));
+
+    // SPA Fallback: For any route not handled by API, send index.html
+    app.get('*', (req, res) => {
+        if (req.originalUrl.startsWith('/api')) {
+            // If it's an API call that wasn't handled above, return 404 JSON
+            return res.status(404).json({ error: `API endpoint not found: ${req.method} ${req.originalUrl}` });
+        }
+        res.sendFile(htmlPath);
+    });
+} else {
+    console.log('Frontend build not found. Running in API-only mode.');
+}
+
+// 404 Handler for API only (since catch-all above handles frontend)
 app.use((req, res) => {
     console.log(`404 Hit: ${req.method} ${req.originalUrl}`);
     res.status(404).json({ error: `Route not found: ${req.method} ${req.originalUrl}` });

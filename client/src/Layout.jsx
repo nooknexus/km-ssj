@@ -26,8 +26,9 @@ const Layout = () => {
             {/* Sidebar */}
             <aside className="w-64 bg-white border-r border-slate-200 fixed h-full z-10 hidden md:flex flex-col flex-shrink-0">
                 <div className="p-6 border-b border-slate-100">
-                    <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-                        คลังข้อมูล KM
+                    <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary leading-tight">
+                        คลังข้อมูล KM <br />
+                        <span className="text-sm font-normal text-slate-500">สำนักงานสาธารณสุขจังหวัดพิษณุโลก</span>
                     </h1>
                 </div>
 
