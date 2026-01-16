@@ -5,8 +5,16 @@ const dotenv = require('dotenv');
 // Load env vars
 const result = dotenv.config();
 if (result.error) {
-    // If .env not found, try .env.production
-    dotenv.config({ path: '.env.production' });
+    // If .env not found, try .env.production with absolute path
+    const envPath = path.join(__dirname, '.env.production');
+    const prodResult = dotenv.config({ path: envPath });
+    if (prodResult.error) {
+        console.error('FAILED TO LOAD ENVIRONMENT VARIABLES. Neither .env nor .env.production found.');
+    } else {
+        console.log(`Loaded environment variables from: ${envPath}`);
+    }
+} else {
+    console.log('Loaded environment variables from: .env');
 }
 
 const app = express();
