@@ -55,7 +55,13 @@ app.use((req, res, next) => {
 });
 
 // Basic Route
-app.get('/', (req, res) => {
+// Basic Route - Commented out to allow frontend to serve at root
+// app.get('/', (req, res) => {
+//     res.send('KM Health System API is running');
+// });
+
+// API Health Check
+app.get('/api/health', (req, res) => {
     res.send('KM Health System API is running');
 });
 
