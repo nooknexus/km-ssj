@@ -2,7 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
-dotenv.config();
+// Load env vars
+const result = dotenv.config();
+if (result.error) {
+    // If .env not found, try .env.production
+    dotenv.config({ path: '.env.production' });
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
