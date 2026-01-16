@@ -83,7 +83,8 @@ if (fs.existsSync(clientDistPath)) {
     app.use(express.static(clientDistPath));
 
     // SPA Fallback: For any route not handled by API, send index.html
-    app.get('*', (req, res) => {
+    // Note: In Express 5, '*' is not supported. Use /(.*)/ instead.
+    app.get(/(.*)/, (req, res) => {
         if (req.originalUrl.startsWith('/api')) {
             // If it's an API call that wasn't handled above, return 404 JSON
             return res.status(404).json({ error: `API endpoint not found: ${req.method} ${req.originalUrl}` });
