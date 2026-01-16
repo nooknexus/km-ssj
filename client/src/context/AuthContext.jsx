@@ -74,8 +74,16 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    // Direct login with user data (for approved pending users)
+    const loginWithUserData = (userData) => {
+        const { token, ...userWithoutToken } = userData;
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(userWithoutToken));
+        setUser(userWithoutToken);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, signup, logout, loading, initiateSSO, loginWithSSO }}>
+        <AuthContext.Provider value={{ user, login, signup, logout, loading, initiateSSO, loginWithSSO, loginWithUserData }}>
             {children}
         </AuthContext.Provider>
     );

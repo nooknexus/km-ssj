@@ -8,16 +8,20 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 
 const PendingApproval = () => {
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { loginWithUserData } = useAuth();
     const pendingUser = JSON.parse(localStorage.getItem('pendingUser') || '{}');
     const [checking, setChecking] = useState(false);
     const [lastCheck, setLastCheck] = useState(null);
     const [showApprovedModal, setShowApprovedModal] = useState(false);
+    const [approvedUserData, setApprovedUserData] = useState(null);
 
-    // Handle modal confirm - redirect to login
+    // Handle modal confirm - login and go to home
     const handleApprovedConfirm = () => {
+        if (approvedUserData) {
+            loginWithUserData(approvedUserData);
+        }
         localStorage.removeItem('pendingUser');
-        navigate('/login');
+        navigate('/');
     };
 
     // Poll for approval status every 30 seconds
@@ -31,7 +35,8 @@ const PendingApproval = () => {
                 setLastCheck(new Date());
 
                 if (response.data.is_approved && response.data.user) {
-                    // User has been approved! Show modal
+                    // User has been approved! Store user data and show modal
+                    setApprovedUserData(response.data.user);
                     setShowApprovedModal(true);
                 }
             } catch (err) {
@@ -63,8 +68,9 @@ const PendingApproval = () => {
             const response = await axios.get(`${API_URL}/api/users/${pendingUser.id}/check-approval`);
             setLastCheck(new Date());
 
-            if (response.data.is_approved) {
-                // Show modal instead of alert
+            if (response.data.is_approved && response.data.user) {
+                // Store user data and show modal
+                setApprovedUserData(response.data.user);
                 setShowApprovedModal(true);
             }
         } catch (err) {
@@ -219,7 +225,7 @@ const PendingApproval = () => {
                         >
                             <span className="flex items-center justify-center gap-2">
                                 <UserCheck size={20} />
-                                เข้าสู่ระบบ
+                                เข้าหน้าหลัก
                             </span>
                         </button>
                     </div>

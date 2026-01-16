@@ -90,10 +90,26 @@ exports.checkApprovalStatus = async (req, res) => {
         }
 
         const user = users[0];
-        res.json({
-            is_approved: user.is_approved,
-            user: user.is_approved ? user : null
-        });
+
+        if (user.is_approved) {
+            // Generate JWT token for approved user
+            const jwt = require('jsonwebtoken');
+            const token = jwt.sign(
+                { user_id: user.id, username: user.username, role: user.role },
+                process.env.JWT_SECRET || 'secret_key',
+                { expiresIn: '8h' }
+            );
+
+            res.json({
+                is_approved: true,
+                user: { ...user, token }
+            });
+        } else {
+            res.json({
+                is_approved: false,
+                user: null
+            });
+        }
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
