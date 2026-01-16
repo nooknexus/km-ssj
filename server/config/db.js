@@ -1,5 +1,20 @@
 const mysql = require('mysql2');
-require('dotenv').config();
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Load env vars with fallback
+const result = dotenv.config();
+if (result.error) {
+    const envPath = path.join(__dirname, '../.env.production');
+    const prodResult = dotenv.config({ path: envPath });
+    if (prodResult.error) {
+        // Try checking current directory as well (for when running from server root)
+        const localEnvPath = path.join(__dirname, '../.env.production');
+        // Actually the previous one went up one level .. which might be correct if config is in server/config/db.js
+        // server/config/db.js -> __dirname = server/config
+        // server/.env.production -> ../.env.production
+    }
+}
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
