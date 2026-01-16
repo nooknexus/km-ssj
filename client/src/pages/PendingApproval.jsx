@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, ArrowLeft, UserCheck, RefreshCw } from 'lucide-react';
+import { Clock, ArrowLeft, UserCheck, RefreshCw, CheckCircle, PartyPopper } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
@@ -12,6 +12,13 @@ const PendingApproval = () => {
     const pendingUser = JSON.parse(localStorage.getItem('pendingUser') || '{}');
     const [checking, setChecking] = useState(false);
     const [lastCheck, setLastCheck] = useState(null);
+    const [showApprovedModal, setShowApprovedModal] = useState(false);
+
+    // Handle modal confirm - redirect to login
+    const handleApprovedConfirm = () => {
+        localStorage.removeItem('pendingUser');
+        navigate('/login');
+    };
 
     // Poll for approval status every 30 seconds
     useEffect(() => {
@@ -24,14 +31,8 @@ const PendingApproval = () => {
                 setLastCheck(new Date());
 
                 if (response.data.is_approved && response.data.user) {
-                    // User has been approved! Generate token and login
-                    const approvedUser = response.data.user;
-
-                    // Perform SSO login again to get token, or call a new endpoint
-                    // For now, redirect to login to re-authenticate
-                    localStorage.removeItem('pendingUser');
-                    alert('บัญชีของคุณได้รับการอนุมัติแล้ว! กรุณาเข้าสู่ระบบอีกครั้ง');
-                    navigate('/login');
+                    // User has been approved! Show modal
+                    setShowApprovedModal(true);
                 }
             } catch (err) {
                 console.error('Error checking approval status:', err);
@@ -63,9 +64,8 @@ const PendingApproval = () => {
             setLastCheck(new Date());
 
             if (response.data.is_approved) {
-                localStorage.removeItem('pendingUser');
-                alert('บัญชีของคุณได้รับการอนุมัติแล้ว! กรุณาเข้าสู่ระบบอีกครั้ง');
-                navigate('/login');
+                // Show modal instead of alert
+                setShowApprovedModal(true);
             }
         } catch (err) {
             console.error('Error checking approval status:', err);
@@ -181,6 +181,50 @@ const PendingApproval = () => {
                     หากมีข้อสงสัย กรุณาติดต่อผู้ดูแลระบบ
                 </p>
             </div>
+
+            {/* Approval Success Modal */}
+            {showApprovedModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 text-center animate-in fade-in zoom-in duration-300">
+                        {/* Success Icon with animation */}
+                        <div className="relative mb-6">
+                            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-xl shadow-green-200/50 animate-bounce">
+                                <CheckCircle className="w-12 h-12 text-white" />
+                            </div>
+                            <div className="absolute -top-2 -right-2 text-3xl animate-pulse">🎉</div>
+                            <div className="absolute -top-2 -left-2 text-3xl animate-pulse" style={{ animationDelay: '150ms' }}>✨</div>
+                        </div>
+
+                        {/* Title */}
+                        <h2 className="text-2xl md:text-3xl font-bold text-slate-800 mb-3">
+                            บัญชีได้รับการอนุมัติแล้ว!
+                        </h2>
+                        <p className="text-slate-500 mb-8 leading-relaxed">
+                            ยินดีต้อนรับเข้าสู่ระบบคลังข้อมูล KM<br />
+                            กรุณาเข้าสู่ระบบอีกครั้งเพื่อเริ่มใช้งาน
+                        </p>
+
+                        {/* User Info */}
+                        {pendingUser.display_name && (
+                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 mb-6 border border-green-200/50">
+                                <p className="font-bold text-slate-800">{pendingUser.display_name}</p>
+                                <p className="text-sm text-slate-500">{pendingUser.email}</p>
+                            </div>
+                        )}
+
+                        {/* Action Button */}
+                        <button
+                            onClick={handleApprovedConfirm}
+                            className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-green-200 transition-all transform hover:scale-[1.02]"
+                        >
+                            <span className="flex items-center justify-center gap-2">
+                                <UserCheck size={20} />
+                                เข้าสู่ระบบ
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
