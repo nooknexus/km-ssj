@@ -15,7 +15,8 @@ exports.createCategory = async (req, res) => {
         let image_url = req.body.image_url;
 
         if (req.file) {
-            image_url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+            // Save relative path only
+            image_url = `/uploads/${req.file.filename}`;
         }
         const [result] = await db.query(
             'INSERT INTO categories (name, image_url) VALUES (?, ?)',
@@ -34,7 +35,8 @@ exports.updateCategory = async (req, res) => {
         let image_url = req.body.image_url;
 
         if (req.file) {
-            image_url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+            // Save relative path only
+            image_url = `/uploads/${req.file.filename}`;
         }
 
         // Check if category exists
