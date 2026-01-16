@@ -76,3 +76,26 @@ exports.updateUserApproval = async (req, res) => {
     }
 };
 
+// Check approval status (Public - no auth required for pending users)
+exports.checkApprovalStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [users] = await db.query(
+            'SELECT id, username, email, role, department, display_name, is_approved FROM users WHERE id = ?',
+            [id]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const user = users[0];
+        res.json({
+            is_approved: user.is_approved,
+            user: user.is_approved ? user : null
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+

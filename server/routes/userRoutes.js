@@ -8,6 +8,8 @@ router.post('/', authenticateToken, isAdmin, userController.addUser);
 router.put('/:id/password', authenticateToken, isAdmin, userController.updateUserPassword);
 router.put('/:id/role', authenticateToken, isAdmin, userController.updateUserRole);
 router.put('/:id/approve', authenticateToken, isAdmin, userController.updateUserApproval);
+// Public: Check approval status (no auth required)
+router.get('/:id/check-approval', userController.checkApprovalStatus);
 router.delete('/:id', authenticateToken, isAdmin, userController.deleteUser);
 
 module.exports = router;

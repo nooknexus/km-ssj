@@ -1,13 +1,77 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, ArrowLeft, UserCheck } from 'lucide-react';
+import { Clock, ArrowLeft, UserCheck, RefreshCw } from 'lucide-react';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 const PendingApproval = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const pendingUser = JSON.parse(localStorage.getItem('pendingUser') || '{}');
+    const [checking, setChecking] = useState(false);
+    const [lastCheck, setLastCheck] = useState(null);
+
+    // Poll for approval status every 30 seconds
+    useEffect(() => {
+        if (!pendingUser.id) return;
+
+        const checkApproval = async () => {
+            try {
+                setChecking(true);
+                const response = await axios.get(`${API_URL}/api/users/${pendingUser.id}/check-approval`);
+                setLastCheck(new Date());
+
+                if (response.data.is_approved && response.data.user) {
+                    // User has been approved! Generate token and login
+                    const approvedUser = response.data.user;
+
+                    // Perform SSO login again to get token, or call a new endpoint
+                    // For now, redirect to login to re-authenticate
+                    localStorage.removeItem('pendingUser');
+                    alert('บัญชีของคุณได้รับการอนุมัติแล้ว! กรุณาเข้าสู่ระบบอีกครั้ง');
+                    navigate('/login');
+                }
+            } catch (err) {
+                console.error('Error checking approval status:', err);
+            } finally {
+                setChecking(false);
+            }
+        };
+
+        // Check immediately on mount
+        checkApproval();
+
+        // Then check every 30 seconds
+        const interval = setInterval(checkApproval, 30000);
+
+        return () => clearInterval(interval);
+    }, [pendingUser.id, navigate]);
 
     const handleBackToLogin = () => {
         localStorage.removeItem('pendingUser');
         navigate('/login');
+    };
+
+    const handleManualCheck = async () => {
+        if (!pendingUser.id || checking) return;
+
+        try {
+            setChecking(true);
+            const response = await axios.get(`${API_URL}/api/users/${pendingUser.id}/check-approval`);
+            setLastCheck(new Date());
+
+            if (response.data.is_approved) {
+                localStorage.removeItem('pendingUser');
+                alert('บัญชีของคุณได้รับการอนุมัติแล้ว! กรุณาเข้าสู่ระบบอีกครั้ง');
+                navigate('/login');
+            }
+        } catch (err) {
+            console.error('Error checking approval status:', err);
+        } finally {
+            setChecking(false);
+        }
     };
 
     return (
@@ -83,17 +147,37 @@ const PendingApproval = () => {
                     </div>
                 </div>
 
-                {/* Action Button */}
-                <button
-                    onClick={handleBackToLogin}
-                    className="inline-flex items-center gap-2 bg-white border-2 border-slate-200 text-slate-600 px-6 py-3 rounded-xl font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all"
-                >
-                    <ArrowLeft size={18} />
-                    กลับหน้าเข้าสู่ระบบ
-                </button>
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-3">
+                    <button
+                        onClick={handleManualCheck}
+                        disabled={checking}
+                        className={`inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-xl font-semibold transition-all ${checking ? 'opacity-70 cursor-not-allowed' : 'hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-200'}`}
+                    >
+                        <RefreshCw size={18} className={checking ? 'animate-spin' : ''} />
+                        {checking ? 'กำลังตรวจสอบ...' : 'ตรวจสอบสถานะ'}
+                    </button>
+                    <button
+                        onClick={handleBackToLogin}
+                        className="inline-flex items-center justify-center gap-2 bg-white border-2 border-slate-200 text-slate-600 px-6 py-3 rounded-xl font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all"
+                    >
+                        <ArrowLeft size={18} />
+                        กลับหน้าเข้าสู่ระบบ
+                    </button>
+                </div>
+
+                {/* Auto-check status */}
+                <p className="mt-6 text-xs text-slate-400">
+                    ระบบตรวจสอบสถานะอัตโนมัติทุก 30 วินาที
+                    {lastCheck && (
+                        <span className="block mt-1">
+                            ตรวจสอบล่าสุด: {lastCheck.toLocaleTimeString('th-TH')}
+                        </span>
+                    )}
+                </p>
 
                 {/* Footer Note */}
-                <p className="mt-8 text-xs text-slate-400">
+                <p className="mt-4 text-xs text-slate-400">
                     หากมีข้อสงสัย กรุณาติดต่อผู้ดูแลระบบ
                 </p>
             </div>
